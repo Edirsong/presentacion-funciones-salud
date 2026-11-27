@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funciones en Ciencias de la Salud</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#222;--ink2:#3A3A3A;--muted:#555;--acc:#C0392B;--blue:#1F5F8B;--ok:#1E7A46;--panel:#F3F3F3}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;font-family:'Archivo',Arial,Helvetica,sans-serif;color:var(--ink)}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;background:#fff;transform:translate(-50%,-50%) scale(var(--k,1));overflow:hidden}
+.bar{position:absolute;left:0;top:0;width:44px;height:100%;background:var(--acc)}
+.slide{position:absolute;inset:0;padding:48px 80px 40px 130px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transform:translateX(50px);transition:opacity .45s,transform .45s,visibility 0s .45s}
+.slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .45s,transform .45s}
+h2{margin:0;font-size:80px;line-height:1.1;font-weight:800}
+h2::after{content:"";display:block;width:230px;height:12px;background:var(--acc);margin-top:18px}
+.body{flex:1;min-height:0;display:flex;gap:60px;margin-top:30px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 50px;margin-top:24px}
+.top p{flex:0 0 100%}
+.top+.body{margin-top:22px}
+.left{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+.right{flex:0 0 780px;display:flex;flex-direction:column;gap:16px}
+p{margin:0;font-size:44px;line-height:1.2}
+.big{font-size:56px;font-weight:600}
+.small{font-size:36px;color:var(--muted)}
+.red{color:var(--acc)}.blue{color:var(--blue)}b{font-weight:800}
+.card{background:var(--panel);border-left:14px solid var(--acc);padding:14px 28px;font-size:42px;line-height:1.2}
+.dark{background:var(--ink2);color:#fff;padding:16px 28px;font-size:44px;font-weight:600;line-height:1.2}
+.eq{font-size:58px;font-weight:800;color:var(--acc);white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.05;font-size:.82em;margin:0 .12em}
+.frac i{font-style:normal;padding:0 .15em}.frac i+i{border-top:.08em solid currentColor}
+sup{font-size:.62em}
+[data-step]{opacity:0;visibility:hidden;transform:translateY(24px);transition:opacity .45s,transform .45s,visibility 0s .45s}
+[data-step].on{opacity:1;visibility:visible;transform:none;transition:opacity .45s,transform .45s}
+button{font-family:inherit;font-size:42px;font-weight:800;padding:12px 30px;border:4px solid var(--ink2);background:#fff;color:var(--ink2);cursor:pointer;border-radius:8px}
+button:hover{border-color:var(--acc)}
+button.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.sl{display:flex;align-items:center;gap:20px;font-size:42px;font-weight:800}
+.sl label{flex:0 0 330px}
+.sl input{flex:1;height:44px;accent-color:var(--acc);cursor:pointer}
+table{border-collapse:collapse;font-size:42px;text-align:center;width:100%}
+td,th{border:3px solid #ccc;padding:4px 6px}
+th{background:var(--ink2);color:#fff}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:'Archivo',Arial,sans-serif}
+
+/* Carátula */
+#cover{justify-content:center;gap:40px}
+#cover h1{margin:0;font-size:112px;line-height:1.08;font-weight:800;max-width:1500px}
+#cover .sub{font-size:56px;font-weight:800;color:var(--acc)}
+#beat{width:1680px}
+#beat path{stroke-dasharray:3200;stroke-dashoffset:3200}
+.active #beat path{animation:draw 4s linear infinite}
+@keyframes draw{70%,100%{stroke-dashoffset:0}}
+
+/* Quiz */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.opts button{font-size:52px;padding:34px;text-align:left}
+.opts button.good{background:var(--ok);border-color:var(--ok);color:#fff}
+.opts button.bad{background:#777;border-color:#777;color:#fff;text-decoration:line-through}
+#timer{font-variant-numeric:tabular-nums}
+
+/* Vertical (teléfono o tableta) */
+#stage.portrait{width:1080px;height:1920px}
+.portrait .bar{width:32px}
+.portrait .slide{padding:50px 50px 70px 80px}
+.portrait h2{font-size:70px}
+.portrait .body{flex-direction:column;gap:28px}
+.portrait .left{flex:0 0 auto;gap:18px}
+.portrait .right{flex:0 0 auto;width:100%;max-width:880px;align-self:center}
+.portrait #cover h1{font-size:96px}
+.portrait #beat{width:950px}
+.portrait .opts{grid-template-columns:1fr}
+.portrait .eq{font-size:54px}
+.portrait p,.portrait .card{font-size:42px}
+
+#count{position:fixed;left:50%;bottom:6px;transform:translateX(-50%);font-size:14px;color:#777;z-index:5}
+#hint{position:fixed;right:12px;bottom:6px;font-size:13px;color:#777;background:#ffffffe6;padding:4px 8px;border-radius:6px;z-index:5}
+body.ui-off #count,body.ui-off #hint{display:none}
+@media (prefers-reduced-motion:reduce){.slide,[data-step]{transition:none!important}.active #beat path{animation:none;stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="bar"></div>
+
+<!-- 1 -->
+<section class="slide" id="cover">
+  <p class="small">Matemática para CCSS · Ciencias de la Salud · Sesiones 31 y 32</p>
+  <h1>Funciones que laten, crecen y se eliminan</h1>
+  <svg id="beat" viewBox="0 0 1680 220"><path fill="none" stroke="#C0392B" stroke-width="10" stroke-linejoin="round" d="M0 130H180l30-25 30 25h50l25 30 35-140 35 175 25-65h60q40-70 80 0H850l30-25 30 25h50l25 30 35-140 35 175 25-65h60q40-70 80 0h460"/></svg>
+  <div class="sub">Funciones trigonométricas y exponenciales aplicadas a la salud</div>
+  <p class="big">Docente: Edir Gonzano Rojas</p>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <h2>¿Qué se repite en tu cuerpo?</h2>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>El corazón:</b> la presión sube y baja en cada latido.</div>
+      <div class="card" data-step><b>Los pulmones:</b> el volumen de aire aumenta y disminuye.</div>
+      <div class="card" data-step><b>La temperatura:</b> sube y baja a lo largo del día.</div>
+      <div class="dark" data-step><b>Logro:</b> resolver situaciones de ciencias de la salud usando funciones trigonométricas y exponenciales.</div>
+    </div>
+    <div class="right"><div id="g-hook"></div><p class="small">Un fenómeno que se repite se puede modelar con seno o coseno.</p></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <h2>Seno y coseno</h2>
+  <div class="body">
+    <div class="left">
+      <div class="row"><button id="b-sen" class="sel">Seno</button><button id="b-cos">Coseno</button><button id="b-both">Ambas</button></div>
+      <div class="card"><span class="red"><b>f(x) = sen x</b></span><br>Empieza en el <b>centro</b>: (0 ; 0)</div>
+      <div class="card" style="border-color:var(--blue)"><span class="blue"><b>g(x) = cos x</b></span><br>Empieza en el <b>máximo</b>: (0 ; 1)</div>
+      <p data-step>Ambas oscilan entre <b>−1 y 1</b> y se repiten cada <b>2π</b>.</p>
+      <div class="dark" data-step>OJO: x va en <b>radianes</b>. Pon tu calculadora en modo <b>RAD</b>.</div>
+    </div>
+    <div class="right"><div id="g-sc"></div></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <h2>Las 4 perillas de la onda</h2>
+  <div class="body">
+    <div class="left">
+      <div class="eq">y = A·sen(bx + c) + k</div>
+      <div class="sl"><label for="sA">A (amplitud): <span id="vA"></span></label><input type="range" id="sA" min="-3" max="3" step="0.5" value="1"></div>
+      <div class="sl"><label for="sb">b (rapidez): <span id="vb"></span></label><input type="range" id="sb" min="0.5" max="4" step="0.5" value="1"></div>
+      <div class="sl"><label for="sc">c (corre): <span id="vc"></span></label><input type="range" id="sc" min="-3" max="3" step="0.5" value="0"></div>
+      <div class="sl"><label for="sk">k (sube): <span id="vk"></span></label><input type="range" id="sk" min="-2" max="2" step="0.5" value="0"></div>
+      <div class="card" data-step><b>Periodo:</b> T = 2π / |b| &nbsp;·&nbsp; <b>Desfase:</b> bx + c = 0 → x = −c/b<br><b>Máximo:</b> k + |A| &nbsp;·&nbsp; <b>Mínimo:</b> k − |A|</div>
+      <div class="dark" data-step>Para tabular: <b>inicio</b> = desfase · <b>fin</b> = inicio + T · <b>paso</b> = T/4</div>
+    </div>
+    <div class="right"><div id="g-knob"></div><div class="dark" id="knob-out"></div></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <h2>Temperatura corporal en un día</h2>
+  <div class="top">
+      <p>La temperatura de un paciente se modela así (T en °C, t en horas desde que inicia el control):</p>
+      <div class="eq">T(t) = 36.8 + 0.4·sen(<span class="frac"><i>πt</i><i>12</i></span>)</div>
+      <p><b>¿Cuál es la temperatura máxima y mínima? ¿Cada cuánto se repite el ciclo?</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>Periodo:</b> 2π ÷ (π/12) = 24 h<br><b>Desfase:</b> πt/12 = 0 → t = 0<br><b>Paso:</b> 24/4 = 6 h</div>
+      <div data-step><table><tr><th>t (h)</th><td>0</td><td>6</td><td>12</td><td>18</td><td>24</td></tr><tr><th>°C</th><td>36.8</td><td>37.2</td><td>36.8</td><td>36.4</td><td>36.8</td></tr></table></div>
+      <div class="dark" data-step>Máxima: <b>37.2 °C</b> · Mínima: <b>36.4 °C</b>.<br>El ciclo se repite cada <b>24 h</b>.</div>
+    </div>
+    <div class="right"><div data-step data-with="2"><div id="g-temp"></div></div></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <h2>Presión arterial</h2>
+  <div class="top">
+      <p>La presión (mmHg) de una persona, con t en <b>minutos</b>, es:</p>
+      <div class="eq">p(t) = 115 + 25·sen(160πt)</div>
+      <p><b>Halla la lectura sistólica/diastólica y compárala con 120/80.</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>Sistólica</b> (máx.) = 115 + 25 = <b>140</b><br><b>Diastólica</b> (mín.) = 115 − 25 = <b>90</b></div>
+      <div class="card" data-step><b>T</b> = 2π/160π = 1/80 min = 0.75 s<br><b>Frecuencia:</b> 80 latidos por minuto</div>
+      <div class="dark" data-step><b>140/90</b> está por encima de la referencia <b>120/80</b> del ejercicio.</div>
+    </div>
+    <div class="right"><div data-step data-with="1"><div id="g-bp"></div></div><p class="small">Eje horizontal en segundos (0.75 s = 0.0125 min).</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <h2>Respiración en reposo</h2>
+  <div class="top">
+      <p>Un paciente inspira y espira 0.5 L cada 4 s. Volumen de aire en sus pulmones (L, t en s):</p>
+      <div class="eq">V(t) = 2.5 − 0.25·cos(<span class="frac"><i>πt</i><i>2</i></span>)</div>
+      <p><b>¿Cuándo es máximo y mínimo el volumen? ¿Cuánto vale?</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>T</b> = 2π ÷ (π/2) = <b>4 s</b></div>
+      <div class="card" data-step><b>Mínimo: 2.25 L</b> en t = 0, 4, 8… s (fin de la espiración)</div>
+      <div class="card" data-step><b>Máximo: 2.75 L</b> en t = 2, 6, 10… s (fin de la inspiración)</div>
+      <div class="dark" data-step>2.75 − 2.25 = <b>0.5 L</b>, el aire de cada respiración. ✔</div>
+    </div>
+    <div class="right"><div data-step data-with="1"><div id="g-lung"></div></div></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <h2>Reto en equipo: fármaco y temperatura</h2>
+  <div class="top">
+      <p>Tras inyectar un fármaco a una rata de laboratorio, las variaciones de temperatura (°C) se modelan así (x en minutos):</p>
+      <div class="eq">f(x) = 3 − <span class="frac"><i>1</i><i>2</i></span>·sen(2x − π)</div>
+      <div class="row"><button class="tbtn">▶ Iniciar 8 min</button><span class="eq timer">08:00</span></div>
+      <p><b>Grafica, indica periodo y desfase, e interpreta.</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>T</b> = 2π/2 = <b>π ≈ 3.14 min</b><br><b>Desfase:</b> 2x − π = 0 → <b>x = π/2</b></div>
+      <div data-step><table><tr><th>x</th><td>π/2</td><td>3π/4</td><td>π</td><td>5π/4</td><td>3π/2</td></tr><tr><th>f</th><td>3</td><td>2.5</td><td>3</td><td>3.5</td><td>3</td></tr></table></div>
+      <div class="dark" data-step>Oscila entre <b>2.5 y 3.5 °C</b>, alrededor de 3 °C, y repite el ciclo cada <b>3.14 min</b>.</div>
+    </div>
+    <div class="right"><div data-step data-with="2"><div id="g-rat"></div></div></div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <h2>¿Crece o se elimina?</h2>
+  <div class="body">
+    <div class="left">
+      <div class="card"><span class="eq">P(t) = P₀·e<sup>rt</sup></span><br><b>Crecimiento:</b> bacterias, población, peso fetal</div>
+      <div class="card" style="border-color:var(--blue)"><span class="eq blue">C(t) = C₀·e<sup>−kt</sup></span><br><b>Decaimiento:</b> eliminación de un fármaco</div>
+      <p class="small">P₀, C₀: valor inicial · r: tasa de crecimiento · k: constante de eliminación · t: tiempo</p>
+      <div class="dark" data-step>El signo del exponente lo decide todo: <b>positivo crece, negativo disminuye</b>.</div>
+    </div>
+    <div class="right">
+      <div class="sl"><label for="sr">Tasa: <span id="vr"></span></label><input type="range" id="sr" min="-0.5" max="0.11" step="0.01" value="0.1"></div>
+      <div id="g-exp"></div><div class="dark" id="exp-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <h2>Control prenatal: peso fetal</h2>
+  <div class="top">
+      <p>El peso fetal estimado (kg) sigue este modelo, con t = semanas <b>desde la semana 20</b>:</p>
+      <div class="eq">P(t) = 0.31·e<sup>0.15t</sup></div>
+      <p><b>Estima el peso en las semanas 28, 32 y 36.</b> Elige una:</p>
+      <div class="row"><button class="wk" data-w="28">Semana 28</button><button class="wk" data-w="32">Semana 32</button><button class="wk" data-w="36">Semana 36</button></div>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" id="wk-out">Primero calcula: ¿cuánto vale t?</div>
+      <div class="dark" data-step>Trampa común: en la semana 28, <b>t = 8</b>, no 28.</div>
+    </div>
+    <div class="right"><div id="g-fetus"></div></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <h2>Farmacocinética</h2>
+  <div class="top">
+      <p>Concentración inicial de 100 mg/L. Se elimina según (t en horas):</p>
+      <div class="eq">C(t) = 100·e<sup>−0.3t</sup></div>
+      <p><b>¿Cuánto queda a las 2, 4 y 6 h? ¿Cuándo llega a 10 mg/L?</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div data-step><table><tr><th>t (h)</th><td>2</td><td>4</td><td>6</td></tr><tr><th>mg/L</th><td>54.9</td><td>30.1</td><td>16.5</td></tr></table></div>
+      <div class="card" data-step>100·e<sup>−0.3t</sup> = 10<br>e<sup>−0.3t</sup> = 0.1<br>t = ln(0.1) / (−0.3) ≈ <b>7.68 h</b></div>
+      <div class="dark" data-step><b>Semivida</b> (queda la mitad): ln 2 / 0.3 ≈ <b>2.31 h</b></div>
+    </div>
+    <div class="right">
+      <div class="sl"><label for="st">Hora: <span id="vt"></span></label><input type="range" id="st" min="0" max="12" step="0.5" value="0"></div>
+      <div id="g-drug"></div><div class="dark" id="drug-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <h2>Retos en equipo</h2>
+  <div class="row" style="margin-top:24px"><button class="tbtn">▶ Iniciar 8 min</button><span class="eq timer">08:00</span></div>
+  <div class="body">
+    <div class="left">
+      <p><b>A.</b> Una bacteria que afecta la digestión se duplica cada 4 h. Hay 500 al inicio. ¿Cuántas habrá a las 12 h?</p>
+      <div class="eq">N(t) = 500·2<sup>0.25t</sup></div>
+      <div class="card" data-step>N(12) = 500·2³ = <b>4000 bacterias</b></div>
+      <p class="small" data-step data-with="1">Comprueba: 500 → 1000 → 2000 → 4000</p>
+    </div>
+    <div class="left">
+      <p><b>B.</b> Un anestésico local se desintegra así (t en horas). ¿Cuánto medicamento queda a las 1, 2 y 3 h?</p>
+      <div class="eq blue">C(t) = 50·e<sup>−0.6t</sup></div>
+      <div data-step><table><tr><th>t (h)</th><td>1</td><td>2</td><td>3</td></tr><tr><th>Queda</th><td>27.4</td><td>15.1</td><td>8.3</td></tr></table></div>
+      <p class="small" data-step data-with="2">Cantidad de medicamento, en la misma unidad que el valor inicial (50).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <h2>Quiz relámpago <span class="red" id="q-num"></span></h2>
+  <div style="margin-top:50px;display:flex;flex-direction:column;gap:40px">
+    <p class="big" id="q-text" style="min-height:140px"></p>
+    <div class="opts" id="q-opts"></div>
+    <div class="card" id="q-fb">Elige una alternativa.</div>
+    <div class="row"><button id="q-prev">◀ Anterior</button><button id="q-next">Siguiente pregunta ▶</button></div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <h2>¿Por qué una dosis cada cierto tiempo?</h2>
+  <div class="body">
+    <div class="left">
+      <p>Cada dosis suma concentración mientras el cuerpo va eliminando la anterior.</p>
+      <p><b>Prueba el intervalo entre dosis:</b></p>
+      <div class="row"><button class="iv" data-h="4">4 h</button><button class="iv sel" data-h="8">8 h</button><button class="iv" data-h="12">12 h</button></div>
+      <div class="card" id="dose-out"></div>
+      <p class="small">Modelo ilustrativo (k = 0.3; cada dosis suma 100 mg/L al instante). No sirve para dosificar pacientes.</p>
+      <div class="dark" data-step><b>Para investigar:</b> ¿cuál es la semivida del paracetamol? ¿Es igual en niños y adultos? Cita tu fuente.</div>
+    </div>
+    <div class="right"><div id="g-dose"></div></div>
+  </div>
+</section>
+
+<!-- 15 (extra) -->
+<section class="slide">
+  <h2>Reto extra: flujo del corazón</h2>
+  <div class="top">
+      <p>El flujo de sangre hacia la aorta <b>durante la sístole</b> se modela con (L/min, t en s):</p>
+      <div class="eq">y = a·sen(bt)</div>
+      <p>La sístole dura 1/4 s y el flujo máximo es 8 L/min. <b>Halla a y b e interpreta.</b></p>
+  </div>
+  <div class="body">
+    <div class="left">
+      <div class="card" data-step><b>a = 8</b>: flujo máximo (L/min)</div>
+      <div class="card" data-step>La sístole es <b>medio periodo</b>:<br>T/2 = 0.25 → T = 0.5<br>b = 2π/0.5 = <b>4π</b></div>
+      <div class="dark" data-step>y = 8·sen(4πt), para 0 ≤ t ≤ 0.25. En la diástole el flujo es 0. Máximo en t = 0.125 s.</div>
+    </div>
+    <div class="right"><div data-step data-with="3"><div id="g-flow"></div></div></div>
+  </div>
+</section>
+</div>
+<div id="count"></div>
+<div id="hint">→ o clic: avanzar · ←: volver · F5 o F: pantalla completa · H: ocultar</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RED='#C0392B', BLUE='#1F5F8B', PI=Math.PI;
+
+/* ---------- Gráficas (SVG) ---------- */
+function plot(id,o){
+  const W=880,H=o.h||640,L=130,R=34,T=60,B=104;
+  const X=x=>L+(x-o.x[0])/(o.x[1]-o.x[0])*(W-L-R), Y=y=>H-B-(y-o.y[0])/(o.y[1]-o.y[0])*(H-T-B);
+  const tx=(x,y,s,a='middle',c='#222',w=400,z=38)=>`<text x="${x}" y="${y}" text-anchor="${a}" fill="${c}" font-weight="${w}" font-size="${z}">${s}</text>`;
+  const ln=(x1,y1,x2,y2,c,w,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-dasharray="${d}"/>`;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica: ${o.yl} según ${o.xl}">`;
+  for(const [v,t] of o.yt) s+=ln(L,Y(v),W-R,Y(v),'#ddd',2)+tx(L-14,Y(v)+11,t,'end');
+  for(const [v,t] of o.xt) s+=ln(X(v),T,X(v),H-B,'#ddd',2)+tx(X(v),H-B+46,t);
+  const y0=Math.max(o.y[0],Math.min(0,o.y[1])), x0=Math.max(o.x[0],0);
+  s+=ln(L,Y(y0),W-R,Y(y0),'#222',3)+ln(X(x0),T,X(x0),H-B,'#222',3);
+  s+=tx((L+W-R)/2,H-12,o.xl,'middle','#555',600)+tx(8,32,o.yl,'start','#555',600);
+  for(const [v,c] of o.hl||[]) s+=ln(L,Y(v),W-R,Y(v),c,3,'14 10');
+  for(const f of o.f){
+    const a=f.from??o.x[0], z=f.to??o.x[1]; let d='';
+    for(let i=0;i<=600;i++){const x=a+(z-a)*i/600; d+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(f.fn(x)).toFixed(1);}
+    s+=`<path d="${d}" fill="none" stroke="${f.c||RED}" stroke-width="7" stroke-linejoin="round"/>`;
+  }
+  for(const p of o.pts||[]){
+    s+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="12" fill="${p[5]||'#222'}"/>`;
+    if(p[2]) s+=tx(X(p[0])+(p[3]??0),Y(p[1])+(p[4]??-22),p[2],'middle','#222',800,40);
+  }
+  $(id).innerHTML=s+'</svg>';
+}
+const ticks=(a,f=v=>v)=>a.map(v=>[v,f(v)]);
+const piT=ticks([0,PI/2,PI,3*PI/2,2*PI]).map((t,i)=>[t[0],['0','π/2','π','3π/2','2π'][i]]);
+
+plot('#g-hook',{h:600,x:[0,4],y:[-1.4,1.4],xt:ticks([0,1,2,3,4]),yt:[],xl:'tiempo',yl:'valor',f:[{fn:x=>Math.sin(PI*x)}]});
+
+function sincos(m){
+  const f=[]; if(m!=='cos') f.push({fn:Math.sin,c:RED}); if(m!=='sen') f.push({fn:Math.cos,c:BLUE});
+  plot('#g-sc',{x:[0,4*PI],y:[-1.4,1.4],xt:[[0,'0'],[PI,'π'],[2*PI,'2π'],[3*PI,'3π'],[4*PI,'4π']],yt:ticks([-1,0,1]),xl:'x (radianes)',yl:'y',f});
+  ['sen','cos','both'].forEach(k=>$('#b-'+k).classList.toggle('sel',k===m));
+}
+['sen','cos','both'].forEach(k=>$('#b-'+k).onclick=()=>sincos(k)); sincos('sen');
+
+const fx=v=>String(+v.toFixed(2)).replace('-','−');
+function knobs(){
+  const [A,b,c,k]=['A','b','c','k'].map(n=>{const v=+$('#s'+n).value; $('#v'+n).textContent=fx(v); return v;});
+  plot('#g-knob',{h:580,x:[0,4*PI],y:[-5.5,5.5],xt:[[0,'0'],[PI,'π'],[2*PI,'2π'],[3*PI,'3π'],[4*PI,'4π']],yt:ticks([-4,-2,0,2,4],fx),xl:'x',yl:'y',hl:[[k,'#888']],f:[{fn:x=>A*Math.sin(b*x+c)+k}]});
+  $('#knob-out').innerHTML=`T = ${fx(2*PI/b)} · desfase = ${fx(c?-c/b:0)}<br>máx = ${fx(k+Math.abs(A))} · mín = ${fx(k-Math.abs(A))}`;
+}
+['sA','sb','sc','sk'].forEach(i=>$('#'+i).oninput=knobs); knobs();
+
+plot('#g-temp',{h:590,x:[0,24],y:[36,37.6],xt:ticks([0,6,12,18,24]),yt:ticks([36.4,36.8,37.2]),xl:'t (horas)',yl:'T (°C)',hl:[[36.8,'#888']],f:[{fn:t=>36.8+.4*Math.sin(PI*t/12)}],pts:[[6,37.2,'máx. 37.2'],[18,36.4,'mín. 36.4',0,52]]});
+plot('#g-bp',{h:500,x:[0,1.5],y:[70,160],xt:ticks([0,.375,.75,1.125,1.5]),yt:ticks([80,90,115,120,140]).filter(t=>t[0]!==115),xl:'t (segundos)',yl:'p (mmHg)',hl:[[120,'#888'],[80,'#888']],f:[{fn:s=>115+25*Math.sin(160*PI*s/60)}],pts:[[.1875,140,'140'],[.5625,90,'90',0,52]]});
+plot('#g-lung',{x:[0,8],y:[2,3],xt:ticks([0,2,4,6,8]),yt:ticks([2.25,2.5,2.75]),xl:'t (s)',yl:'V (litros)',f:[{fn:t=>2.5-.25*Math.cos(PI*t/2),c:BLUE}],pts:[[2,2.75,'máx. 2.75 L'],[4,2.25,'mín. 2.25 L',0,52]]});
+plot('#g-rat',{h:560,x:[0,2*PI],y:[2,4],xt:piT,yt:ticks([2.5,3,3.5]),xl:'x (minutos)',yl:'f (°C)',hl:[[3,'#888']],f:[{fn:x=>3-.5*Math.sin(2*x-PI)}],pts:[[PI/2,3,'inicio',-20,66],[3*PI/4,2.5,'2.5',0,52],[5*PI/4,3.5,'3.5']]});
+
+function expo(){
+  const r=+$('#sr').value, f=t=>500*Math.exp(r*t);
+  $('#vr').textContent=fx(r);
+  plot('#g-exp',{h:560,x:[0,6],y:[0,1000],xt:ticks([0,1,2,3,4,5,6]),yt:ticks([0,250,500,750,1000]),hl:[[500,'#888']],xl:'t',yl:'cantidad (inicia en 500)',f:[{fn:f,c:r<0?BLUE:RED}],pts:[[0,500]]});
+  $('#exp-out').textContent=(r>0?'Crece':r<0?'Disminuye':'Se mantiene')+`: en t = 6 vale ${f(6).toFixed(0)}`;
+}
+$('#sr').oninput=expo; expo();
+
+const fetal=w=>0.31*Math.exp(.15*(w-20));
+function fetus(sel){
+  const pts=[28,32,36].map(w=>{const on=w===sel; return [w,fetal(w),on?fetal(w).toFixed(2)+' kg':'',-80,-14,on?'#222':'#999'];});
+  plot('#g-fetus',{h:560,x:[20,38],y:[0,5],xt:ticks([20,24,28,32,36]),yt:ticks([0,1,2,3,4,5]),xl:'semana de gestación',yl:'peso (kg)',f:[{fn:fetal}],pts:sel?pts:[]});
+  $$('.wk').forEach(b=>b.classList.toggle('sel',+b.dataset.w===sel));
+  if(sel) $('#wk-out').innerHTML=`t = ${sel} − 20 = <b>${sel-20}</b><br>P = 0.31·e<sup>${(.15*(sel-20)).toFixed(1)}</sup> ≈ <b>${fetal(sel).toFixed(2)} kg</b>`;
+}
+$$('.wk').forEach(b=>b.onclick=()=>fetus(+b.dataset.w)); fetus();
+
+function drug(){
+  const t=+$('#st').value, f=x=>100*Math.exp(-.3*x);
+  $('#vt').textContent=t+' h';
+  plot('#g-drug',{h:520,x:[0,12],y:[0,110],xt:ticks([0,2,4,6,8,10,12]),yt:ticks([0,10,25,50,75,100]),xl:'t (horas)',yl:'C (mg/L)',hl:[[10,'#888']],f:[{fn:f,c:BLUE}],pts:[[t,f(t),'',0,0,RED]]});
+  $('#drug-out').textContent=`A las ${t} h quedan ${f(t).toFixed(1)} mg/L`;
+}
+$('#st').oninput=drug; drug();
+
+function dose(h){
+  const conc=t=>{let s=0; for(let d=0;d<=t+1e-9;d+=h) s+=100*Math.exp(-.3*(t-d)); return s;};
+  const f=[]; for(let d=0;d<48;d+=h) f.push({fn:t=>conc(d)*Math.exp(-.3*(t-d)),from:d,to:Math.min(48,d+h),c:BLUE});
+  for(let d=h;d<48;d+=h){const before=conc(d)-100, after=conc(d); f.push({fn:t=>before+(after-before)*(t-d+.001)/.001,from:d-.001,to:d,c:BLUE});}
+  plot('#g-dose',{h:680,x:[0,48],y:[0,160],xt:ticks([0,12,24,36,48]),yt:ticks([0,50,100,150]),xl:'t (horas)',yl:'C (mg/L)',f});
+  const max=100/(1-Math.exp(-.3*h));
+  $('#dose-out').innerHTML=`Cada <b>${h} h</b>, ya estable: oscila entre <b>${(max*Math.exp(-.3*h)).toFixed(0)}</b> y <b>${max.toFixed(0)} mg/L</b>.`;
+  $$('.iv').forEach(b=>b.classList.toggle('sel',+b.dataset.h===h));
+}
+$$('.iv').forEach(b=>b.onclick=()=>dose(+b.dataset.h)); dose(8);
+
+plot('#g-flow',{x:[0,1],y:[0,10],xt:ticks([0,.25,.5,.75,1]),yt:ticks([0,4,8]),xl:'t (segundos)',yl:'flujo (L/min)',f:[{fn:t=>8*Math.sin(4*PI*t),from:0,to:.25},{fn:()=>0,from:.25,to:.5},{fn:t=>8*Math.sin(4*PI*(t-.5)),from:.5,to:.75},{fn:()=>0,from:.75,to:1}],pts:[[.125,8,'máx. 8'],[.25,0,'fin sístole',118,-18]]});
+
+/* ---------- Quiz ---------- */
+const QUIZ=[
+ ['La señal de un monitor se modela con y = 3·sen(4t), t en segundos. ¿Cuál es su periodo?',['4 s','π/2 s','2π s','3 s'],1,'T = 2π/4 = π/2 s.'],
+ ['Si p(t) = 100 + 20·sen(150πt), ¿cuál es la lectura de presión?',['100/20','150/100','120/80','120/100'],2,'100 + 20 = 120 y 100 − 20 = 80.'],
+ ['Si V(t) = 3 − 0.4·cos(πt/3) litros, ¿cuál es el volumen máximo?',['3 L','2.6 L','3.4 L','0.4 L'],2,'Es máximo cuando el coseno vale −1: 3 + 0.4 = 3.4 L.'],
+ ['En C(t) = 80·e^(−0.2t), ¿qué indica el signo negativo?',['La concentración disminuye','La concentración es negativa','El tiempo retrocede','La dosis inicial es 0.2'],0,'Es decaimiento: se elimina con el tiempo. Empieza en 80.'],
+ ['Un cultivo sigue N(t) = 200·2^(t/3), t en horas. ¿Cuántas bacterias hay a las 6 h?',['400','1200','600','800'],3,'N(6) = 200·2² = 800.']
+];
+let q=0;
+function quiz(){
+  const [text,opts,ok,why]=QUIZ[q];
+  const sup=s=>s.replace(/\^\((.+?)\)/g,'<sup>$1</sup>');
+  $('#q-num').textContent=`${q+1}/${QUIZ.length}`; $('#q-text').innerHTML=sup(text); $('#q-fb').textContent='Elige una alternativa.';
+  $('#q-opts').innerHTML='';
+  opts.forEach((o,i)=>{const b=document.createElement('button'); b.textContent='ABCD'[i]+') '+o;
+    b.onclick=()=>{b.classList.add(i===ok?'good':'bad'); $('#q-fb').innerHTML=i===ok?'✔ <b>¡Correcto!</b> '+why:'✘ <b>Inténtalo otra vez.</b>';};
+    $('#q-opts').appendChild(b);});
+}
+$('#q-prev').onclick=()=>{q=(q+QUIZ.length-1)%QUIZ.length; quiz();};
+$('#q-next').onclick=()=>{q=(q+1)%QUIZ.length; quiz();};
+quiz();
+
+/* ---------- Cronómetro ---------- */
+$$('.tbtn').forEach(btn=>{
+  const out=btn.nextElementSibling; let left=480, id=null, end=0;
+  const show=()=>out.textContent=String(left/60|0).padStart(2,'0')+':'+String(left%60).padStart(2,'0');
+  const stop=t=>{clearInterval(id); id=null; btn.textContent=t;};
+  btn.onclick=()=>{
+    if(id) return stop('▶ Continuar');
+    if(!left){left=480; show();}
+    end=Date.now()+left*1000; btn.textContent='❚❚ Pausar';
+    id=setInterval(()=>{left=Math.max(0,Math.ceil((end-Date.now())/1000)); show(); if(!left) stop('↻ Reiniciar');},250);
+  };
+});
+
+/* ---------- Navegación ---------- */
+const slides=$$('.slide'); let cur=0, step=0;
+const stepsOf=s=>{const els=[...s.querySelectorAll('[data-step]')]; let n=0; return {list:els.map(e=>[e,e.dataset.with?+e.dataset.with:++n]),max:n};};
+const info=slides.map(stepsOf);
+function show(i,st=0){
+  cur=Math.max(0,Math.min(slides.length-1,i)); step=Math.max(0,Math.min(info[cur].max,st));
+  slides.forEach((s,j)=>s.classList.toggle('active',j===cur));
+  info[cur].list.forEach(([e,n])=>e.classList.toggle('on',n<=step));
+  $('#count').textContent=(cur+1)+' / '+slides.length;
+  history.replaceState(null,'','#'+(cur+1)+(step?'.'+step:''));
+}
+const next=()=>step<info[cur].max?show(cur,step+1):cur<slides.length-1&&show(cur+1);
+const prev=()=>step>0?show(cur,step-1):cur>0&&show(cur-1,info[cur-1].max);
+addEventListener('keydown',e=>{
+  const k=e.key;
+  if(e.target.matches?.('input')&&k.startsWith('Arrow')) return;
+  if(e.target.matches?.('button')&&(k===' '||k==='Enter')) return;
+  if(['ArrowRight','PageDown',' ','Enter'].includes(k)){e.preventDefault(); next();}
+  else if(['ArrowLeft','PageUp'].includes(k)){e.preventDefault(); prev();}
+  else if(k==='Home') show(0);
+  else if(k==='End') show(slides.length-1);
+  else if(k==='F5'){e.preventDefault(); if(!document.fullscreenElement) document.documentElement.requestFullscreen();}
+  else if(k==='f'||k==='F') document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+  else if(k==='h'||k==='H') document.body.classList.toggle('ui-off');
+});
+addEventListener('click',e=>{
+  if(e.target.closest('button,input,label,.sl')) { if(e.target.closest('button')) e.target.closest('button').blur(); return; }
+  next();
+});
+addEventListener('change',e=>e.target.blur());
+function fit(){
+  const p=innerHeight>innerWidth; $('#stage').classList.toggle('portrait',p);
+  document.documentElement.style.setProperty('--k',Math.min(innerWidth/(p?1080:1920),innerHeight/(p?1920:1080)));
+}
+function fromHash(){const [a,b]=location.hash.slice(1).split('.').map(Number); show((a||1)-1,b||0);}
+addEventListener('resize',fit); addEventListener('hashchange',fromHash); fit(); fromHash();
+</script>
+</body>
+</html>
